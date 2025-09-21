@@ -12,8 +12,8 @@
 (define-data-var total-donations uint u0)
 (define-data-var token-reward-per-donation uint u100)
 
-(define-map food-items 
-  uint 
+(define-map food-items
+  uint
   {
     qr-code: (string-ascii 64),
     name: (string-ascii 50),
@@ -27,7 +27,8 @@
     fiber: uint,
     sodium: uint,
     is-organic: bool,
-    is-donated: bool
+    is-donated: bool,
+    recipient: (optional principal)
   })
 
 (define-map supply-chain-events
@@ -48,7 +49,8 @@
   {
     total-registered: uint,
     total-donated: uint,
-    reputation-score: uint
+    reputation-score: uint,
+    total-feedback: uint
   })
 
 (define-map donation-recipients
@@ -58,6 +60,8 @@
     last-donation-date: uint,
     verification-status: bool
   })
+
+(define-map food-feedback {food-id: uint, rater: principal} uint)
 
 (define-read-only (get-food-item (food-id uint))
   (map-get? food-items food-id))
@@ -69,8 +73,8 @@
   (default-to u0 (map-get? food-event-count food-id)))
 
 (define-read-only (get-producer-stats (producer principal))
-  (default-to 
-    {total-registered: u0, total-donated: u0, reputation-score: u0}
+  (default-to
+    {total-registered: u0, total-donated: u0, reputation-score: u0, total-feedback: u0}
     (map-get? producer-stats producer)))
 
 (define-read-only (get-donation-recipient (recipient principal))
@@ -111,11 +115,12 @@
       fiber: fiber,
       sodium: sodium,
       is-organic: is-organic,
-      is-donated: false
+      is-donated: false,
+      recipient: none
     })
     (map-set food-event-count food-id u0)
     (var-set next-food-id (+ food-id u1))
-    (update-producer-stats tx-sender u1 u0)
+    (update-producer-stats tx-sender u1 u0 u0)
     (ok food-id)))
 
 (define-public (add-supply-chain-event
@@ -143,10 +148,10 @@
   (let ((food-item (unwrap! (get-food-item food-id) err-not-found)))
     (asserts! (is-eq (get producer food-item) tx-sender) err-unauthorized)
     (asserts! (not (get is-donated food-item)) err-already-exists)
-    (map-set food-items food-id (merge food-item {is-donated: true}))
+    (map-set food-items food-id (merge food-item {is-donated: true, recipient: (some recipient)}))
     (try! (ft-mint? nutrition-token (var-get token-reward-per-donation) tx-sender))
     (var-set total-donations (+ (var-get total-donations) u1))
-    (update-producer-stats tx-sender u0 u1)
+    (update-producer-stats tx-sender u0 u1 u0)
     (update-donation-recipient recipient)
     (ok true)))
 
@@ -169,13 +174,14 @@
 (define-public (transfer-tokens (amount uint) (recipient principal))
   (ft-transfer? nutrition-token amount tx-sender recipient))
 
-(define-private (update-producer-stats (producer principal) (registered-increment uint) (donated-increment uint))
+(define-private (update-producer-stats (producer principal) (registered-increment uint) (donated-increment uint) (feedback-increment uint))
   (let ((current-stats (get-producer-stats producer)))
     (map-set producer-stats producer {
       total-registered: (+ (get total-registered current-stats) registered-increment),
       total-donated: (+ (get total-donated current-stats) donated-increment),
-      reputation-score: (+ (get reputation-score current-stats) 
-                          (+ registered-increment (* donated-increment u5)))
+      reputation-score: (+ (get reputation-score current-stats)
+                          (+ registered-increment (+ (* donated-increment u5) (* feedback-increment u2)))),
+      total-feedback: (+ (get total-feedback current-stats) feedback-increment)
     })
     true))
 
@@ -207,4 +213,13 @@
     (asserts! (or (is-eq tx-sender contract-owner) 
                   (is-eq tx-sender (get producer food-item))) err-unauthorized)
     (try! (add-supply-chain-event food-id "RECALL" "EMERGENCY" none reason))
+    (ok true)))
+
+(define-public (submit-feedback (food-id uint) (rating uint))
+  (let ((food-item (unwrap! (get-food-item food-id) err-not-found)))
+    (asserts! (and (>= rating u1) (<= rating u5)) err-invalid-amount)
+    (asserts! (is-some (get recipient food-item)) err-unauthorized)
+    (asserts! (is-eq tx-sender (unwrap-panic (get recipient food-item))) err-unauthorized)
+    (map-set food-feedback {food-id: food-id, rater: tx-sender} rating)
+    (update-producer-stats (get producer food-item) u0 u0 rating)
     (ok true)))
