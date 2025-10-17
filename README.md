@@ -23,6 +23,12 @@ A comprehensive Clarity smart contract that creates an immutable ledger for food
 - Verified recipient system
 - Emergency recall capabilities
 
+### 📦 Batch Food Registration
+```clarity
+(batch-register-food-items items)
+```
+Register multiple food items in a single transaction for improved efficiency and reduced gas costs.
+
 ## 📋 Smart Contract Functions
 
 ### 🍯 Food Item Management
@@ -127,6 +133,11 @@ clarinet console
 ## 🧪 Testing
 
 ```bash
+### 🏭 Bulk Operations
+- Streamlined batch food item registration
+- Reduced transaction costs for large-scale producers
+- Enhanced scalability for food supply chains
+
 npm install
 npm test
 ```
@@ -144,6 +155,7 @@ Run comprehensive TypeScript tests for all contract functions.
 ### 🤝 Food Donation Programs
 - Incentivize food donations with tokens
 - Track donated food distribution
+- 📦 Batch registration efficiency gains
 - Verify recipient organizations
 - Prevent food waste
 

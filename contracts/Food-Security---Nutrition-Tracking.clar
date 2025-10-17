@@ -223,3 +223,29 @@
     (map-set food-feedback {food-id: food-id, rater: tx-sender} rating)
     (update-producer-stats (get producer food-item) u0 u0 rating)
     (ok true)))
+
+(define-public (batch-register-food-items (items (list 10 {qr-code: (string-ascii 64), name: (string-ascii 50), production-date: uint, expiry-date: uint, calories: uint, protein: uint, carbs: uint, fat: uint, fiber: uint, sodium: uint, is-organic: bool})))
+  (ok (map register-single-item items)))
+
+(define-private (register-single-item (item {qr-code: (string-ascii 64), name: (string-ascii 50), production-date: uint, expiry-date: uint, calories: uint, protein: uint, carbs: uint, fat: uint, fiber: uint, sodium: uint, is-organic: bool}))
+  (let ((food-id (var-get next-food-id)))
+    (map-set food-items food-id {
+      qr-code: (get qr-code item),
+      name: (get name item),
+      producer: tx-sender,
+      production-date: (get production-date item),
+      expiry-date: (get expiry-date item),
+      calories: (get calories item),
+      protein: (get protein item),
+      carbs: (get carbs item),
+      fat: (get fat item),
+      fiber: (get fiber item),
+      sodium: (get sodium item),
+      is-organic: (get is-organic item),
+      is-donated: false,
+      recipient: none
+    })
+    (map-set food-event-count food-id u0)
+    (var-set next-food-id (+ food-id u1))
+    (update-producer-stats tx-sender u1 u0 u0)
+    food-id))
