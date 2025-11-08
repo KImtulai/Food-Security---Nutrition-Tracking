@@ -249,3 +249,23 @@
     (var-set next-food-id (+ food-id u1))
     (update-producer-stats tx-sender u1 u0 u0)
     food-id))
+
+(define-public (calculate-meal-nutrition (food-ids (list 10 uint)))
+  (let ((total-calories u0)
+        (total-protein u0)
+        (total-carbs u0)
+        (total-fat u0)
+        (total-fiber u0)
+        (total-sodium u0))
+    (ok (fold accumulate-nutrition food-ids {calories: total-calories, protein: total-protein, carbs: total-carbs, fat: total-fat, fiber: total-fiber, sodium: total-sodium}))))
+
+(define-private (accumulate-nutrition (food-id uint) (acc {calories: uint, protein: uint, carbs: uint, fat: uint, fiber: uint, sodium: uint}))
+  (let ((food-item (unwrap! (get-food-item food-id) acc)))
+    {
+      calories: (+ (get calories acc) (get calories food-item)),
+      protein: (+ (get protein acc) (get protein food-item)),
+      carbs: (+ (get carbs acc) (get carbs food-item)),
+      fat: (+ (get fat acc) (get fat food-item)),
+      fiber: (+ (get fiber acc) (get fiber food-item)),
+      sodium: (+ (get sodium acc) (get sodium food-item))
+    }))

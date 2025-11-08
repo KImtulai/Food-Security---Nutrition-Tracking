@@ -29,6 +29,12 @@ A comprehensive Clarity smart contract that creates an immutable ledger for food
 ```
 Register multiple food items in a single transaction for improved efficiency and reduced gas costs.
 
+### 🥗 Meal Nutrition Calculator
+```clarity
+(calculate-meal-nutrition food-ids)
+```
+Aggregate nutritional data from multiple food items to compute total calories, protein, carbs, fat, fiber, and sodium for meal planning and dietary tracking.
+
 ## 📋 Smart Contract Functions
 
 ### 🍯 Food Item Management
@@ -159,6 +165,12 @@ Run comprehensive TypeScript tests for all contract functions.
 - Verify recipient organizations
 - Prevent food waste
 
+### 🥗 Meal Planning & Nutrition Tracking
+- Aggregate nutritional data across multiple food items
+- Enable precise meal composition analysis
+- Support dietary planning and nutritional goals
+- Enhance consumer awareness of meal nutrition
+
 ### 🏥 Public Health
 - Monitor nutrition in communities
 - Track foodborne illness sources
@@ -173,6 +185,7 @@ Track key metrics:
 - 🪙 Token distribution
 - ⭐ Producer reputation scores
 - 🌡️ Cold chain compliance rates
+- 🥗 Meal nutrition aggregations
 
 ---
 
