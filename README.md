@@ -150,6 +150,13 @@ npm test
 
 Run comprehensive TypeScript tests for all contract functions.
 
+## 🔔 Food Expiration Alerts
+
+```clarity
+(is-food-expiring-soon food-id)
+```
+Monitors food items approaching expiration within 7 days, promoting timely consumption and reducing waste. Integrates with blockchain timestamps for accurate, tamper-proof alerts.
+
 ## 🌟 Use Cases
 
 ### 🏪 Retail & Distribution

@@ -269,3 +269,10 @@
       fiber: (+ (get fiber acc) (get fiber food-item)),
       sodium: (+ (get sodium acc) (get sodium food-item))
     }))
+
+(define-read-only (is-food-expiring-soon (food-id uint))
+  (let ((food-item (unwrap! (get-food-item food-id) false)))
+    (if (> (get expiry-date food-item) stacks-block-height)
+      (< (- (get expiry-date food-item) stacks-block-height) u7)
+      false)))
+
